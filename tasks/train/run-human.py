@@ -14,12 +14,17 @@ EX_NOINPUT = 66
 
 def argument_parser():
     parser = argparse.ArgumentParser(description='train a human ChromBPNet model using V4 anchors')
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--bams', nargs='+', help='input BAMs')
-    group.add_argument("--fragment-files", nargs='+', help='input fragment files')
-    parser.add_argument('--bias_output_directory', help='bias model output directory')
+
+    input_file_group = parser.add_mutually_exclusive_group(required=True)
+    input_file_group.add_argument('--bams', nargs='+', help='input BAMs')
+    input_file_group.add_argument("--fragment-files", nargs='+', help='input fragment files')
+
+    bias_model_group = parser.add_mutually_exclusive_group(required=True)
+    bias_model_group.add_argument('--bias_model', help='(optional) path to existing bias model in H5 format')
+    bias_model_group.add_argument('--bias_output_directory', help='bias model output directory')
+
     parser.add_argument('--model_output_directory', help='model output directory')
-    parser.add_argument('--bias_model', nargs='?', help='(optional) path to existing bias model')
+
     return parser
 
 def main():
@@ -35,7 +40,7 @@ def main():
         return EX_USAGE
     
     # make sure input files exist
-    for input_file in args.bams:
+    for input_file in args.bams if args.bams is not None else args.fragment_files:
         if not os.path.exists(input_file):
             print(f"{input_file} does not exist", file = sys.stderr)
             return EX_NOINPUT

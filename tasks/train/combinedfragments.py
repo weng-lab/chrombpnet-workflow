@@ -14,7 +14,7 @@ class CombinedFragmentFiles:
         self.tempfile = tempfile.NamedTemporaryFile(suffix = ".gz")
         with tempfile.NamedTemporaryFile('rt') as f:
             with gzip.open(self.tempfile.name, 'wt') as o:
-                os.system(f"zcat {self.files.join(' ')} | sort -k1,1 -k2,2n > {f.name}")
+                os.system(f"zcat {' '.join(self.files)} | sort -k1,1 -k2,2n > {f.name}")
                 for line in f:
                     if line.split()[0] in self.chromosomes: o.write(line)
                 o.flush()
