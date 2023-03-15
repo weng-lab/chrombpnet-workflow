@@ -42,11 +42,16 @@ fun WorkflowBuilder.trainTask(name: String, i: Publisher<TrainTaskInput>) = this
         )
 
     val bamPaths = input.input.bams.map { it.dockerPath }
+    val biasModelFlag
+        = if (input.input.trainedModel == null)
+            "--bias_output_directory $outputsDir/bias_${input.input.name}"
+          else
+            "--bias_model ${input.input.trainedModel!!.biasModelH5.dockerPath}"
     command =
         """
         run-human.py \
             --bams ${bamPaths.joinToString(separator = " ")} \
             --model_output_directory $outputsDir/model_${input.input.name} \
-            --bias_output_directory $outputsDir/bias_${input.input.name}
+            $biasModelFlag
         """
 }

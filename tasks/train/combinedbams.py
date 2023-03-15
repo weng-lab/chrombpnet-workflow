@@ -38,5 +38,5 @@ class CombinedBAMs:
             x.close()
         return self.bam
     
-    def __exit__(self, *args):
+    def __exit__(self, *_):
         self.bam.close()

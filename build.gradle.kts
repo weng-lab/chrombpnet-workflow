@@ -13,6 +13,7 @@ repositories {
     mavenLocal()
     jcenter()
     maven {
+        name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/weng-lab/krews")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
