@@ -3,7 +3,7 @@ package task
 import krews.core.WorkflowBuilder
 import krews.file.*
 import krews.file.OutputDirectory
-import model.ChromBPNetInput
+import model.*
 import org.reactivestreams.Publisher
 
 data class TrainTaskParameters(
@@ -41,7 +41,19 @@ fun WorkflowBuilder.trainTask(name: String, i: Publisher<TrainTaskInput>) = this
             evaluationRegions = input.input.evaluationRegions
         )
 
-    val bamPaths = input.input.bams.map { it.dockerPath }
+    val inputPaths
+        = if (input.input is ChromBPNetBAMInput) {
+            val paths = (input.input as ChromBPNetBAMInput).bams.map { it.dockerPath }.joinToString(separator = " ")
+            "--bams $paths"
+          } else {
+            val paths = (input.input as ChromBPNetFragmentFileInput).fragmentFiles.map { it.dockerPath }.joinToString(separator = " ")
+            "--fragment-files $paths"
+          }
+    val barcodeFlag
+        = if (input.input is ChromBPNetBAMInput || (input.input as ChromBPNetFragmentFileInput).barcodeFile == null)
+            ""
+          else
+            "--barcode-file ${(input.input as ChromBPNetFragmentFileInput).barcodeFile!!.dockerPath}"
     val biasModelFlag
         = if (input.input.trainedModel == null)
             "--bias_output_directory $outputsDir/bias_${input.input.name}"
@@ -50,8 +62,9 @@ fun WorkflowBuilder.trainTask(name: String, i: Publisher<TrainTaskInput>) = this
     command =
         """
         run-human.py \
-            --bams ${bamPaths.joinToString(separator = " ")} \
+            $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \
-            $biasModelFlag
+            $biasModelFlag \
+            $barcodeFlag
         """
 }

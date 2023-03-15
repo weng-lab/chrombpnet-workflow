@@ -1,12 +1,26 @@
 package model
 import krews.file.File
 
-data class ChromBPNetInput(
-    val name: String,
+interface ChromBPNetInput {
+    val name: String
+    val evaluationRegions: File
+    val trainedModel: TrainedModelInput?
+}
+
+data class ChromBPNetBAMInput(
+    override val name: String,
     val bams: List<File>,
-    val evaluationRegions: File,
-    val trainedModel: TrainedModelInput? = null
-)
+    override val evaluationRegions: File,
+    override val trainedModel: TrainedModelInput? = null
+) : ChromBPNetInput
+
+data class ChromBPNetFragmentFileInput(
+    override val name: String,
+    val fragmentFiles: List<File>,
+    override val evaluationRegions: File,
+    val barcodeFile: File? = null,
+    override val trainedModel: TrainedModelInput? = null
+) : ChromBPNetInput
 
 data class TrainedModelInput(
     val biasModelH5: File,

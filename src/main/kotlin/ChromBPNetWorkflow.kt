@@ -15,7 +15,7 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
 
     val params = params<ChromBPNetParams>()
     val inputs = params.inputs
-        .filter { it.trainedModel == null || !it.trainedModel.hasCompleteModel() }
+        .filter { it.trainedModel == null || !(it.trainedModel as TrainedModelInput).hasCompleteModel() }
         .map { TrainTaskInput(it) }
         .toFlux()
     val preTrainedInputs = params.inputs
@@ -43,8 +43,8 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
                         PredictionTaskInput(
                             name = it.name,
                             chromBPNetModelH5 = it.trainedModel!!.chromBPNetModelH5!!,
-                            chromBPNetModelBiasCorrectedH5 = it.trainedModel.chromBPNetModelBiasCorrectedH5!!,
-                            chromBPNetModelBiasScaledH5 = it.trainedModel.chromBPNetModelBiasScaledH5!!,
+                            chromBPNetModelBiasCorrectedH5 = (it.trainedModel as TrainedModelInput).chromBPNetModelBiasCorrectedH5!!,
+                            chromBPNetModelBiasScaledH5 = (it.trainedModel as TrainedModelInput).chromBPNetModelBiasScaledH5!!,
                             evaluationRegions = it.evaluationRegions
                         )
                     }

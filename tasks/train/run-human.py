@@ -23,6 +23,7 @@ def argument_parser():
     bias_model_group.add_argument('--bias_model', help='(optional) path to existing bias model in H5 format')
     bias_model_group.add_argument('--bias_output_directory', help='bias model output directory')
 
+    parser.add_argument('--barcode-file', help='file containing a list of barcodes')
     parser.add_argument('--model_output_directory', help='model output directory')
 
     return parser
@@ -33,6 +34,8 @@ def main():
     parser = argument_parser()
     try:
         args = parser.parse_args()
+        if args.barcode_file is not None and args.fragment_files is None:
+            parser.error('--barcode-file can only be used with --fragment-files')
     except argparse.ArgumentError as error:
         # Print a usage message
         print(f"error: {error}")
@@ -53,7 +56,7 @@ def main():
 
     # convert input BED files to narrowPeak
     chromosomes = " ".join([ f"chr{i}" for i in range(1, 23) ] + [ "chrX", "chrY" ])
-    with CombinedBAMs(args.bams, chromosomes) if args.bams is not None else CombinedFragmentFiles(args.fragment_files, chromosomes) as input_file:
+    with CombinedBAMs(args.bams, chromosomes) if args.bams is not None else CombinedFragmentFiles(args.fragment_files, chromosomes, args.barcode_file) as input_file:
         with ActiveRegions(input_file.name, "/usr/local/genome/GRCh38-Anchors.bed") as peaks:
             with tempfile.NamedTemporaryFile() as nonpeaks:
 
