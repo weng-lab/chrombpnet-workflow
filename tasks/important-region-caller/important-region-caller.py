@@ -137,12 +137,12 @@ def main():
             os.system(f"sort -k1,1 -k2,2n {negative_regions.name} > {negative_sorted.name}")
             os.system(f"bedToBigBed {negative_sorted.name} /usr/local/genome/hg38.chrom.sizes {args.negative_output}")
     
-    # write the negative importance regions
+    # write the positive importance regions
     with tempfile.NamedTemporaryFile('wt') as positive_regions:
         for i, x in enumerate(important_regions):
             for start, end in x[1]:
-                negative_regions.write(f"{regions[i][0]}\t{regions[i][1] + start}\t{regions[i][1] + end}\n")
-        negative_regions.flush()
+                positive_regions.write(f"{regions[i][0]}\t{regions[i][1] + start}\t{regions[i][1] + end}\n")
+        positive_regions.flush()
         with tempfile.NamedTemporaryFile() as positive_sorted:
             os.system(f"sort -k1,1 -k2,2n {positive_regions.name} > {positive_sorted.name}")
             os.system(f"bedToBigBed {positive_sorted.name} /usr/local/genome/hg38.chrom.sizes {args.positive_output}")
