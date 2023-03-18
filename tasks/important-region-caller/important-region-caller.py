@@ -14,6 +14,7 @@ import numpy
 import numpy as np
 import argparse
 import tempfile
+import itertools
 from hmmlearn import hmm
 
 EX_USAGE = 64
@@ -33,10 +34,10 @@ def value_vector(bed, bigWig, expansion_size=500):
 def z_threshold(x, d):
     s = numpy.std(x)
     m = numpy.mean(x)
-    return m + s * 2 * d
+    return m + s * 1.96 * d
 
-def ghmm():
-    model = hmm.MultinomialHMM(n_components=3, init_params='', params='')
+def ghmm(data):
+    model = hmm.MultinomialHMM(n_components=3, init_params='', params='ste')
     model.transmat_ = [[0.99639193, 0.0021334, 0.00147468], [0.1726586, 0.80259281, 0.0247486 ], [0.0842804, 0.01653451, 0.89918509]]
     model.emissionprob_ = [
         [9.98800471e-01, 7.71665149e-04, 4.27864194e-04],
@@ -44,7 +45,7 @@ def ghmm():
         [4.56654445e-01, 1.57082808e-02, 5.27637275e-01]
     ]
     model.startprob_ = [1, 0, 0]
-    model.fit(numpy.array([[ 1, 0, 0 ]]))
+    model.fit(data)
     return model
 
 def find_changes(arr):
@@ -55,21 +56,42 @@ def find_changes(arr):
     change_indices = np.nonzero(diff)[0] + 1
 
     # Create list of tuples containing the value and the index where it changes
-    changes = [(arr[i], i) for i in change_indices]
+    changes = [(arr[i], i) for i in change_indices if i < len(arr)]
 
     return changes
 
-def region_coordinates(x, model):
-    states = model.predict(x)
-    change_indexes = find_changes(states)
+def find_runs(values):
+    change_indexes = find_changes(values)
     change_indexes.append((0, 1000))
-    stretches = [[], []]
+    stretches = [[], [], []]
     for i, x in enumerate(change_indexes):
         if i == len(change_indexes) - 1: break
-        if x[0] == 0: continue
-        if x[0] >= 1 and change_indexes[i + 1][1] - x[1] > 4:
-            stretches[x[0] - 1].append(( x[1], change_indexes[i + 1][1]))
+        if change_indexes[i + 1][1] - x[1] > 4:
+            stretches[x[0]].append(( x[1], change_indexes[i + 1][1]))
     return stretches
+
+def region_coordinates(x, model):
+    states = model.predict(x)
+    state_runs = find_runs(states)[1:]
+    zero_emission_runs = find_runs([ 0 if xx[0] == 1 else 1 for xx in x ])[0]
+    print(f"subtracting up to {len(zero_emission_runs)} runs of zeros from hits")
+    return [ multirange_diff(x, zero_emission_runs) for x in state_runs ]
+
+def range_diff(r1, r2):
+    s1, e1 = r1
+    s2, e2 = r2
+    endpoints = sorted((s1, s2, e1, e2))
+    result = []
+    if endpoints[0] == s1:
+        result.append((endpoints[0], endpoints[1]))
+    if endpoints[3] == e1:
+        result.append((endpoints[2], endpoints[3]))
+    return result
+
+def multirange_diff(r1_list, r2_list):
+    for r2 in r2_list:
+        r1_list = list(itertools.chain(*[range_diff(r1, r2) for r1 in r1_list]))
+    return r1_list
 
 def argument_parser():
     parser = argparse.ArgumentParser(description='use an HMM to identify important motifs from a ChromBPNet importance score bigWig')
@@ -106,16 +128,18 @@ def main():
 
     # get thresholds
     v_log = numpy.log(numpy.abs(values)) * numpy.sign(values)
+    v_log_abs = numpy.log(numpy.abs(values[values != 0]))
     pos_threshold = z_threshold(v_log[v_log > 0], -1)
     neg_threshold = z_threshold(v_log[v_log < 0], 1)
-    print(f"positive threshold: {pos_threshold}\nnegative threshold: {neg_threshold}")
+    all_threshold = -z_threshold(v_log_abs, 1)
+    print(f"positive threshold: {pos_threshold}\nnegative threshold: {neg_threshold}\ncomplete threshold: {all_threshold}")
 
     # make HMM input
     v_thresholded = numpy.copy(v_log)
     v_thresholded = numpy.where(
-        numpy.logical_and(v_thresholded > neg_threshold, v_thresholded < 0), 1, # set all positive contributors to 1
+        numpy.logical_and(v_thresholded > -all_threshold, v_thresholded < 0), 1, # set all positive contributors to 1
         np.where(
-            np.logical_and(v_thresholded < pos_threshold, v_thresholded > 0), -1, # set all negative contributors to -1
+            np.logical_and(v_thresholded < all_threshold, v_thresholded > 0), -1, # set all negative contributors to -1
             0 # set all remaining to 0
         )
     )
@@ -124,7 +148,7 @@ def main():
     prediction_input = numpy.array(tvalues)[numpy.nan_to_num(v_thresholded, 0) + 1]
 
     # get the important regions
-    model = ghmm()
+    model = ghmm(prediction_input[:10000000])
     important_regions = [ region_coordinates(prediction_input[1000*i:1000*(i+1)], model) for i in range(len(regions)) ]
 
     # write the negative importance regions
