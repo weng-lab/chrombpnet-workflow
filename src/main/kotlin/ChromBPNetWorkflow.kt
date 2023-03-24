@@ -119,15 +119,17 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
     val individualPredictionInputs = params.inputs
         .filter { it is IndividualPredictionInput }
         .flatMap {
-            it.sequences.map { seq ->
-                PredictionTaskInput(
-                    "${it.name}.${seq.name}",
-                    it.chromBPNetModelH5,
-                    it.chromBPNetModelBiasCorrectedH5,
-                    it.chromBPNetModelBiasScaledH5,
-                    it.evaluationRegions,
-                    seq.file
-                )
+            it.models.flatMap { model ->
+                it.sequences.map { seq ->
+                    PredictionTaskInput(
+                        "${it.name}.${model.name}.${seq.name}",
+                        model.chromBPNetModelH5,
+                        model.chromBPNetModelBiasCorrectedH5,
+                        model.chromBPNetModelBiasScaledH5,
+                        it.evaluationRegions,
+                        seq.file
+                    )
+                }
             }
         }
     predictionTask(
