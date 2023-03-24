@@ -119,7 +119,7 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
     val individualPredictionInputs = params.inputs
         .filter { it is IndividualPredictionInput }
         .flatMap {
-            it.models.flatMap { model ->
+            (it as IndividualPredictionInput).models.flatMap { model ->
                 it.sequences.map { seq ->
                     PredictionTaskInput(
                         "${it.name}.${model.name}.${seq.name}",
@@ -131,7 +131,7 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
                     )
                 }
             }
-        }
+        }.toFlux()
     predictionTask(
         "individual-predict",
         individualPredictionInputs

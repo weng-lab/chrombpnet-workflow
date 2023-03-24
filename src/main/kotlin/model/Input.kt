@@ -31,21 +31,22 @@ data class TrainedModelInput(
 
 data class IndividualPredictionSequence(
     val name: String,
-    val sequence: File
+    val file: File
 )
 
 data class TrainedPredictiveModel(
     val name: String,
     val chromBPNetModelH5: File,
     val chromBPNetModelBiasCorrectedH5: File,
-    val chromBPNetModelBiasScaledH5: File,
+    val chromBPNetModelBiasScaledH5: File
 )
 
 data class IndividualPredictionInput(
-    val name: String,
+    override val name: String,
     val models: List<TrainedPredictiveModel>,
-    val evaluationRegions: File,
-    val sequences: List<IndividualPredictionSequence>
+    override val evaluationRegions: File,
+    val sequences: List<IndividualPredictionSequence>,
+    override val trainedModel: TrainedModelInput? = null
 ) : ChromBPNetInput
 
 fun TrainedModelInput.hasCompleteModel(): Boolean {
