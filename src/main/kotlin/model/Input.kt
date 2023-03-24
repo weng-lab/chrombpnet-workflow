@@ -29,6 +29,20 @@ data class TrainedModelInput(
     val chromBPNetModelBiasScaledH5: File? = null
 )
 
+data class IndividualPredictionSequence(
+    val name: String,
+    val sequence: File
+)
+
+data class IndividualPredictionInput(
+    val name: String,
+    val chromBPNetModelH5: File,
+    val chromBPNetModelBiasCorrectedH5: File,
+    val chromBPNetModelBiasScaledH5: File,
+    val evaluationRegions: File,
+    val sequences: List<IndividualPredictionSequence>
+) : ChromBPNetInput
+
 fun TrainedModelInput.hasCompleteModel(): Boolean {
     return chromBPNetModelH5?.let { true } ?: false &&
            chromBPNetModelBiasCorrectedH5?.let { true } ?: false &&

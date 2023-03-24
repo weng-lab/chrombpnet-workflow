@@ -15,7 +15,8 @@ data class PredictionTaskInput(
     val chromBPNetModelH5: File,
     val chromBPNetModelBiasCorrectedH5: File,
     val chromBPNetModelBiasScaledH5: File,
-    val evaluationRegions: File
+    val evaluationRegions: File,
+    val sequence: File? = null
 )
 
 data class PredictionTaskOutput(
@@ -39,14 +40,14 @@ fun WorkflowBuilder.predictionTask(name: String, i: Publisher<PredictionTaskInpu
 
     command =
         """
-        twoBitToFa /usr/local/genome/hg38.2bit /usr/local/genome/hg38.fa && \
+        twoBitToFa ${input.sequence?.dockerPath ?: "/usr/local/genome/hg38.2bit"} /usr/local/genome/sequence.fa && \
         bed3-to-narrowpeak.py ${input.evaluationRegions.dockerPath} ${input.evaluationRegions.dockerPath}.narrowPeak && \
         chrombpnet pred_bw \
             --bias-model ${input.chromBPNetModelBiasScaledH5.dockerPath} \
             --chrombpnet-model ${input.chromBPNetModelH5.dockerPath} \
             --chrombpnet-model-nb ${input.chromBPNetModelBiasCorrectedH5.dockerPath} \
             --regions ${input.evaluationRegions.dockerPath}.narrowPeak \
-            --genome /usr/local/genome/hg38.fa \
+            --genome /usr/local/genome/sequence.fa \
             --chrom-sizes /usr/local/genome/hg38.chrom.sizes \
             --output-prefix $outputsDir/predictions_${input.name} \
             --tqdm ${params.tqdm}

@@ -15,10 +15,12 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
 
     val params = params<ChromBPNetParams>()
     val inputs = params.inputs
+        .filter { !(it is IndividualPredictionInput) }
         .filter { it.trainedModel == null || !(it.trainedModel as TrainedModelInput).hasCompleteModel() }
         .map { TrainTaskInput(it) }
         .toFlux()
     val preTrainedInputs = params.inputs
+        .filter { !(it is IndividualPredictionInput) }
         .filter { it.trainedModel?.hasCompleteModel() ?: false }
 
     // train any models which are not yet trained
@@ -93,7 +95,7 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
     )
 
     // merge profile count and importance scores together from the pieces
-    mergeTask(
+    val mergeOutputs = mergeTask(
         "merge",
         shapOutput
             .groupBy { it.name }
@@ -111,6 +113,26 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
                         )
                     }
             }
+    )
+
+    // run prediction on individually passed sequence/region pairs
+    val individualPredictionInputs = params.inputs
+        .filter { it is IndividualPredictionInput }
+        .flatMap {
+            it.sequences.map { seq ->
+                PredictionTaskInput(
+                    "${it.name}.${seq.name}",
+                    it.chromBPNetModelH5,
+                    it.chromBPNetModelBiasCorrectedH5,
+                    it.chromBPNetModelBiasScaledH5,
+                    it.evaluationRegions,
+                    seq.file
+                )
+            }
+        }
+    predictionTask(
+        "individual-predict",
+        individualPredictionInputs
     )
 
 }
