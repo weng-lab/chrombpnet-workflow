@@ -2,13 +2,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("jvm") version "1.7.0"
+    kotlin("jvm") version "1.7.20"
     id("application")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     java
 }
 
-version = "0.9.1"
+version = "0.10.0"
 
 repositories {
     mavenLocal()
@@ -25,7 +25,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.krews", "krews", "0.13.1")
+    implementation("io.krews", "krews", "0.14.4")
+    implementation("io.projectreactor", "reactor-core", "3.2.6.RELEASE")
 }
 
 application {
