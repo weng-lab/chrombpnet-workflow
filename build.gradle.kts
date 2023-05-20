@@ -2,12 +2,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("jvm") version "1.3.10"
+    kotlin("jvm") version "1.7.0"
     id("application")
-    id("com.github.johnrengelman.shadow") version "4.0.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    java
 }
 
-version = "0.9.0"
+version = "0.9.1"
 
 repositories {
     mavenLocal()
@@ -23,12 +24,12 @@ repositories {
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-    compile("io.krews", "krews", "0.13.1")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("io.krews", "krews", "0.13.1")
 }
 
 application {
-    mainClassName = "ChromBPNetWorkflowKt"
+    mainClass.set("ChromBPNetWorkflowKt")
 }
 
 tasks.withType<KotlinCompile> {
@@ -36,7 +37,8 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<ShadowJar> {
-    baseName = "chrombpnet"
-    classifier = ""
-    destinationDir = file("build")
+    archiveBaseName.set("base")
+    archiveClassifier.set("")
+    destinationDirectory.set(file("build"))
 }
+
