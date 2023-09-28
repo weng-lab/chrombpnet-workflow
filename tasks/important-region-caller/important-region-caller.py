@@ -15,6 +15,7 @@ import numpy as np
 import argparse
 import tempfile
 import itertools
+import subprocess
 from hmmlearn import hmm
 
 EX_USAGE = 64
@@ -96,7 +97,7 @@ def multirange_diff(r1_list, r2_list):
 def argument_parser():
     parser = argparse.ArgumentParser(description='use an HMM to identify important motifs from a ChromBPNet importance score bigWig')
     parser.add_argument('--bigwig', required=True, help='profile or count importance score bigWig')
-    parser.add_argument("--bed", required=True, help='regions in which to find important motifs')
+    parser.add_argument("--bed", help='regions in which to find important motifs; if not passed, all consecutive regions with signal in the bigWig will be used')
     parser.add_argument("--positive-output", required=True, help='path to output positive importance region bigBed')
     parser.add_argument("--negative-output", required=True, help='path to output negative importance region bigBed')
     return parser
@@ -118,10 +119,20 @@ def main():
         print(f"{args.bigwig} does not exist", file = sys.stderr)
         return EX_NOINPUT
     
-    # make sure input bed exists
-    if not os.path.exists(args.bed):
-        print(f"{args.bigwig} does not exist", file = sys.stderr)
-        return EX_NOINPUT
+    # make sure input bed exists; if it does not, generate one using regions in the bigWig that have signal
+    temporary_bed = None
+    if args.bed is None or not os.path.exists(args.bed):
+        temporary_bed = tempfile.NamedTemporaryFile()
+        args.bed = temporary_bed.name
+        command = [
+            sys.executable,
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), 'find-regions-with-signal.py'),
+            args.bigwig,
+            args.bed
+        ]
+        if subprocess.run(command) != 0:
+            print(f"unable to identify consecutive regions with signal in {args.bigwig}; check that it is appropriately formatted", file = sys.stderr)
+            return EX_NOINPUT
     
     # get values at input regions
     regions, values = value_vector(args.bed, args.bigwig)
@@ -171,6 +182,10 @@ def main():
             os.system(f"sort -k1,1 -k2,2n {positive_regions.name} > {positive_sorted.name}")
             os.system(f"bedToBigBed {positive_sorted.name} /usr/local/genome/hg38.chrom.sizes {args.positive_output}")
     
+    # close the temporary BED file if it was generated
+    if temporary_bed is not None:
+        temporary_bed.close()
+
     return 0
 
 if __name__ == "__main__":
