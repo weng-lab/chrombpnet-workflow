@@ -30,6 +30,9 @@ def argument_parser():
 
 def main():
 
+    # create temporary genome directory
+    genome = tempfile.TemporaryDirectory()
+
     # check arguments
     parser = argument_parser()
     try:
@@ -49,7 +52,7 @@ def main():
             return EX_NOINPUT
     
     # make sure sequence is initialized
-    initialized = os.system("initialize.py")
+    initialized = os.system(f"initialize.py {genome.name}")
     if initialized != 0:
         print("unable to initialize hg38 genome sequence", file = sys.stderr)
         return initialized
@@ -57,14 +60,14 @@ def main():
     # convert input BED files to narrowPeak
     chromosomes = " ".join([ f"chr{i}" for i in range(1, 23) ] + [ "chrX", "chrY" ])
     with CombinedBAMs(args.bams, chromosomes) if args.bams is not None else CombinedFragmentFiles(args.fragment_files, chromosomes, args.barcode_file) as input_file:
-        with ActiveRegions(input_file.name, "/usr/local/genome/GRCh38-Anchors.bed") as peaks:
+        with ActiveRegions(input_file.name, f"{genome.name}/GRCh38-Anchors.bed") as peaks:
             with tempfile.NamedTemporaryFile() as nonpeaks:
 
                 # convert BEDs to narrowPeak
                 with tempfile.TemporaryDirectory() as d:
                     bed_conversion = sum([
                         os.system(f"bed3-to-narrowpeak.py {peaks.name} {peaks.name}.narrowPeak && mv {peaks.name}.narrowPeak {peaks.name}"),
-                        os.system(f"chrombpnet prep nonpeaks -g /usr/local/genome/hg38.fa -p {peaks.name} -c  /usr/local/genome/hg38.chrom.sizes -fl /usr/local/genome/fold.json -o {d}"),
+                        os.system(f"chrombpnet prep nonpeaks -g {genome.name}/hg38.fa -p {peaks.name} -c  {genome.name}/hg38.chrom.sizes -fl /usr/local/genome/fold.json -o {d}"),
                         os.system(f"mv {d}_auxiliary/negatives.bed {nonpeaks.name}"),
                         os.system(f"bed3-to-narrowpeak.py {nonpeaks.name} {nonpeaks.name}.narrowPeak && mv {nonpeaks.name}.narrowPeak {nonpeaks.name}")
                     ])
@@ -82,8 +85,8 @@ def main():
                         chrombpnet bias pipeline
                             {input_flag}
                             -d \"ATAC\"
-                            -g /usr/local/genome/hg38.fa
-                            -c /usr/local/genome/hg38.chrom.sizes
+                            -g {genome.name}/hg38.fa
+                            -c {genome.name}/hg38.chrom.sizes
                             -p {peaks.name}
                             -n {nonpeaks.name}
                             -fl /usr/local/genome/fold.json
@@ -95,18 +98,22 @@ def main():
                         return bias_training
                 
                 # train the model
-                return os.system(f"""
+                retval = os.system(f"""
                     chrombpnet pipeline
                         {input_flag}
                         -d \"ATAC\"
-                        -g /usr/local/genome/hg38.fa
-                        -c /usr/local/genome/hg38.chrom.sizes
+                        -g {genome.name}/hg38.fa
+                        -c {genome.name}/hg38.chrom.sizes
                         -p {peaks.name}
                         -n {nonpeaks.name}
                         -fl /usr/local/genome/fold.json
                         -b {bias_model}
                         -o {args.model_output_directory}
                     """.replace("\n", " "))
+    
+    # clean up and exit
+    genome.close()
+    return retval
 
 if __name__ == "__main__":
     sys.exit(main())

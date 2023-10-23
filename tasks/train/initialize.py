@@ -11,17 +11,17 @@ def run(command, condition, message):
 def main():
     return sum([
         run(
-            "twoBitToFa /usr/local/genome/hg38.2bit /usr/local/genome/hg38.fa",
-            os.path.exists("/usr/local/genome/hg38.fa"),
+            f"twoBitToFa /usr/local/genome/hg38.2bit {sys.argv[1]}/hg38.fa",
+            os.path.exists(f"{sys.argv[1]}/hg38.fa"),
             "building hg38 FASTA"
         ),
         run(
-            "gunzip /usr/local/genome/GRCh38-Anchors.bed.gz",
-            os.path.exists("/usr/local/genome/GRCh38-Anchors.bed"),
+            f"zcat /usr/local/genome/GRCh38-Anchors.bed.gz > {sys.argv[1]}/GRCh38-Anchors.bed",
+            os.path.exists(f"{sys.argv[1]}/GRCh38-Anchors.bed"),
             "building anchors"
         ),
-        run("head -24 /usr/local/genome/hg38.chrom.sizes > /usr/local/genome/hg38.minimal.chrom.sizes", False, "filtering chromosomes"),
-        run("mv /usr/local/genome/hg38.minimal.chrom.sizes /usr/local/genome/hg38.chrom.sizes", False, "saving chromosomes")
+        run(f"head -24 /usr/local/genome/hg38.chrom.sizes > {sys.argv[1]}/hg38.minimal.chrom.sizes", False, "filtering chromosomes"),
+        run(f"cp {sys.argv[1]}/hg38.minimal.chrom.sizes {sys.argv[1]}/hg38.chrom.sizes", False, "saving chromosomes")
     ])
 
 if __name__ == "__main__":

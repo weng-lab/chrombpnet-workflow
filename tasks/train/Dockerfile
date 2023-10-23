@@ -18,7 +18,7 @@ COPY fold.json /usr/local/genome
 COPY combinedbams.py /bin
 COPY zscores.py /bin
 COPY combinedfragments.py /bin
-RUN chmod -R 666 /usr/local/genome
+RUN chmod -R 777 /usr/local/genome
 
 RUN apt-get autoremove -y && \
     apt-get autoclean -y && \
