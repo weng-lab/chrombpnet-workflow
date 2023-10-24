@@ -1,4 +1,4 @@
-FROM kundajelab/chrombpnet:latest
+FROM pratth/chrombpnet:latest
 
 RUN apt-get -y update && apt-get -y install libcairo2-dev libsdl-pango-dev
 

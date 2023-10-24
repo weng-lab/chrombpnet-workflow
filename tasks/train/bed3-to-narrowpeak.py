@@ -8,6 +8,7 @@ and takes ultimate responsibility for the content of this script.
 
 import os
 import sys
+import tempfile
 import pandas as pd
 
 EX_USAGE = 64
@@ -26,7 +27,9 @@ def main(argc, argv):
         return EX_NOINPUT
 
     # Read the 3-column BED file
-    bed = pd.read_csv(argv[1], header=None, sep='\t', usecols=[0, 1, 2], names=["chrom", "start", "end"])
+    with tempfile.NamedTemporaryFile('rt') as f:
+        os.system(f"sort -k1,1 -k2,2n {argv[1]} | uniq > {f.name}")
+        bed = pd.read_csv(f.name, header=None, sep='\t', usecols=[0, 1, 2], names=["chrom", "start", "end"])
     bed["start"] = bed["start"].astype(int)
     bed["end"] = bed["end"].astype(int)
     
