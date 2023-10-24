@@ -13,11 +13,13 @@ RUN wget http://gcp.wenglab.org/GRCh38-Anchors.bed.gz -O /usr/local/genome/GRCh3
 
 COPY run-human.py /bin
 COPY initialize.py /bin
+COPY modisco.py /bin
 COPY bed3-to-narrowpeak.py /bin
 COPY fold.json /usr/local/genome
 COPY combinedbams.py /bin
 COPY zscores.py /bin
 COPY combinedfragments.py /bin
+COPY pipelines.py /scratch/chrombpnet/chrombpnet/pipelines.py
 RUN chmod -R 777 /usr/local/genome
 
 RUN apt-get autoremove -y && \

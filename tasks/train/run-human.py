@@ -81,7 +81,7 @@ def main():
                 # train the bias model
                 bias_model = args.bias_model if args.bias_model is not None else os.path.join(args.bias_output_directory, "models", "bias.h5")
                 if not os.path.exists(bias_model):
-                    bias_training = os.system(f"""
+                    retval = os.system(f"""
                         chrombpnet bias pipeline
                             {input_flag}
                             -d \"ATAC\"
@@ -93,23 +93,21 @@ def main():
                             -b 1000
                             -o {args.bias_output_directory}
                         """.replace("\n", " "))
-                    if bias_training != 0:
-                        print("unable to train bias model", file = sys.stderr)
-                        return bias_training
                 
-                # train the model
-                retval = os.system(f"""
-                    chrombpnet pipeline
-                        {input_flag}
-                        -d \"ATAC\"
-                        -g {genome.name}/hg38.fa
-                        -c {genome.name}/hg38.chrom.sizes
-                        -p {peaks.name}
-                        -n {nonpeaks.name}
-                        -fl /usr/local/genome/fold.json
-                        -b {bias_model}
-                        -o {args.model_output_directory}
-                    """.replace("\n", " "))
+                else:
+                    # bias model passed; train the true model
+                    retval = os.system(f"""
+                        chrombpnet pipeline
+                            {input_flag}
+                            -d \"ATAC\"
+                            -g {genome.name}/hg38.fa
+                            -c {genome.name}/hg38.chrom.sizes
+                            -p {peaks.name}
+                            -n {nonpeaks.name}
+                            -fl /usr/local/genome/fold.json
+                            -b {bias_model}
+                            -o {args.model_output_directory}
+                        """.replace("\n", " "))
     
     # clean up and exit
     genome.close()

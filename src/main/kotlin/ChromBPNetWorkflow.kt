@@ -17,14 +17,43 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
     val inputs = params.inputs
         .filter { !(it is IndividualPredictionInput) }
         .filter { it.trainedModel == null || !(it.trainedModel as TrainedModelInput).hasCompleteModel() }
-        .map { TrainTaskInput(it) }
+        .map { TrainBiasTaskInput(it) }
         .toFlux()
     val preTrainedInputs = params.inputs
         .filter { !(it is IndividualPredictionInput) }
         .filter { it.trainedModel?.hasCompleteModel() ?: false }
 
     // train any models which are not yet trained
-    val trainingOutputs = trainTask("train", inputs)
+    val biasTrainingOutputs = trainBiasTask("train-bias", inputs)
+    val trainingOutputs = trainModelTask(
+        "train-model",
+        biasTrainingOutputs
+            .map {
+                TrainModelTaskInput(
+                    input = it
+                )
+            }
+    )
+
+    // run modisco
+    biasModiscoTask(
+        "bias-modisco",
+        biasTrainingOutputs
+            .map {
+                BiasModiscoTaskInput(
+                    input = it
+                )
+            }
+    )
+    modelModiscoTask(
+        "model-modisco",
+        trainingOutputs
+            .map {
+                ModelModiscoTaskInput(
+                    input = it
+                )
+            }
+    )
 
     // run prediction of signal profiles
     predictionTask(
