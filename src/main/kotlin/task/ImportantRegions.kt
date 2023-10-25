@@ -27,7 +27,7 @@ data class ImportantRegionTaskOutput(
 
 fun WorkflowBuilder.importantRegionTask(name: String, i: Publisher<ImportantRegionTaskInput>) = this.task<ImportantRegionTaskInput, ImportantRegionTaskOutput>(name, i) {
     val params = taskParams<ImportantRegionTaskParameters>()
-    dockerImage = "/home/henry.pratt-umw/images/important-region-caller_latest.sif"
+    dockerImage = "gcr.io/devenv-215523/important-region-caller:latest"
 
     output =
         ImportantRegionTaskOutput(

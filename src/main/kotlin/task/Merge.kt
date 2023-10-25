@@ -24,7 +24,7 @@ data class MergeTaskOutput(
 
 fun WorkflowBuilder.mergeTask(name: String, i: Publisher<MergeTaskInput>) = this.task<MergeTaskInput, MergeTaskOutput>(name, i) {
     val params = taskParams<MergeTaskParameters>()
-    dockerImage = "/home/henry.pratt-umw/images/big-wig-merge_latest.sif"
+    dockerImage = "gcr.io/devenv-215523/big-wig-merge:latest"
 
     output =
         MergeTaskOutput(

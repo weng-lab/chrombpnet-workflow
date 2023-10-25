@@ -27,7 +27,7 @@ data class PredictionNumpyTaskOutput(
 
 fun WorkflowBuilder.predictionNumpyTask(name: String, i: Publisher<PredictionNumpyTaskInput>) = this.task<PredictionNumpyTaskInput, PredictionNumpyTaskOutput>(name, i) {
     val params = taskParams<PredictionNumpyTaskParameters>()
-    dockerImage = "/home/henry.pratt-umw/images/chrombpnet-prediction_latest.sif"
+    dockerImage = "gcr.io/devenv-215523/chrombpnet-prediction:latest"
 
     output =
         PredictionNumpyTaskOutput(

@@ -28,7 +28,7 @@ data class PredictionTaskOutput(
 
 fun WorkflowBuilder.predictionTask(name: String, i: Publisher<PredictionTaskInput>) = this.task<PredictionTaskInput, PredictionTaskOutput>(name, i) {
     val params = taskParams<PredictionTaskParameters>()
-    dockerImage = "/home/henry.pratt-umw/images/chrombpnet_latest.sif"
+    dockerImage = "gcr.io/devenv-215523/chrombpnet:latest"
 
     output =
         PredictionTaskOutput(

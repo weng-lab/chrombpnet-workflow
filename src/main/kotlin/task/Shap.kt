@@ -25,7 +25,7 @@ data class ShapTaskOutput(
 
 fun WorkflowBuilder.shapTask(name: String, i: Publisher<ShapTaskInput>) = this.task<ShapTaskInput, ShapTaskOutput>(name, i) {
     val params = taskParams<ShapTaskParameters>()
-    dockerImage = "/home/henry.pratt-umw/images/chrombpnet_latest.sif"
+    dockerImage = "gcr.io/devenv-215523/chrombpnet:latest"
 
     output =
         ShapTaskOutput(
