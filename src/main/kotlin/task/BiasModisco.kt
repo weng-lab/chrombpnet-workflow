@@ -7,7 +7,7 @@ import model.*
 import org.reactivestreams.Publisher
 
 data class BiasModiscoTaskParameters(
-    val biasThreshold: Float = 0.5F
+    val dataType: String = "ATAC"
 )
 
 data class BiasModiscoTaskInput(
@@ -26,7 +26,7 @@ fun WorkflowBuilder.biasModiscoTask(name: String, i: Publisher<BiasModiscoTaskIn
     output =
         BiasModiscoTaskOutput(
             name = input.input.name,
-            output = OutputDirectory("bias-evaluation")
+            output = OutputDirectory("${input.input.name}/bias-evaluation")
         )
 
     command =
@@ -35,9 +35,10 @@ fun WorkflowBuilder.biasModiscoTask(name: String, i: Publisher<BiasModiscoTaskIn
             bias \
             bias \
             ${input.input.biasProfileScores.dockerPath} \
-            $outputsDir/bias-evaluation/modisco_profile/profile.h5 \
+            $outputsDir/${input.input.name}/bias-evaluation/modisco_profile/profile.h5 \
             ${input.input.biasCountsScores.dockerPath} \
-            $outputsDir/bias-evaluation/modisco_counts/counts.h5 \
-            $outputsDir
+            $outputsDir/${input.input.name}/bias-evaluation/modisco_counts/counts.h5 \
+            $outputsDir \
+            ${params.dataType}
         """
 }

@@ -37,10 +37,10 @@ fun WorkflowBuilder.shapTask(name: String, i: Publisher<ShapTaskInput>) = this.t
     command =
         """
         twoBitToFa /usr/local/genome/hg38.2bit /tmp/hg38.fa && \
-        bed3-to-narrowpeak.py ${input.piece.dockerPath} ${input.piece.dockerPath}.narrowPeak && \
+        bed3-to-narrowpeak.py ${input.piece.dockerPath} /tmp/regions.narrowPeak && \
         chrombpnet contribs_bw \
             --model-h5 ${input.modelH5.dockerPath} \
-            --regions ${input.piece.dockerPath}.narrowPeak \
+            --regions /tmp/regions.narrowPeak \
             --genome /tmp/hg38.fa \
             --chrom-sizes /usr/local/genome/hg38.chrom.sizes \
             --output-prefix $outputsDir/${input.name}.${input.index} \

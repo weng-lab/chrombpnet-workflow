@@ -8,7 +8,7 @@ from argparse import Namespace
 import chrombpnet.helpers.generate_reports.make_html_bias as make_html_bias
 import chrombpnet.helpers.generate_reports.make_html as make_html
 
-def bias_modisco(file_prefix, bias_profile_scores, modisco_results_profile_scores, bias_counts_scores, modisco_results_counts_scores, output_dir):
+def bias_modisco(file_prefix, bias_profile_scores, modisco_results_profile_scores, bias_counts_scores, modisco_results_counts_scores, output_dir, data_type):
 	meme_file=get_default_data_path(DefaultDataFile.motifs_meme)
 	
 	os.system(f"mkdir -p {os.path.join(output_dir, 'bias-evaluation', 'modisco_profile')}")
@@ -22,12 +22,12 @@ def bias_modisco(file_prefix, bias_profile_scores, modisco_results_profile_score
 	modisco_command = "modisco report -i {} -o {} -m {}".format((modisco_results_counts_scores),os.path.join(output_dir,"bias-evaluation", "modisco_counts"),meme_file)
 	os.system(modisco_command)
 
-	args_copy = Namespace(file_prefix=file_prefix, output_dir=output_dir)
+	args_copy = Namespace(file_prefix=file_prefix, output_dir=output_dir, data_type=data_type)
 	args_copy.input_dir = args_copy.output_dir
 	args_copy.command = "train"
 	return make_html_bias.main(args_copy)
 
-def modisco(file_prefix, no_bias_profile_scores, modisco_results_profile_scores, output_dir):
+def modisco(file_prefix, no_bias_profile_scores, modisco_results_profile_scores, output_dir, data_type):
     meme_file=get_default_data_path(DefaultDataFile.motifs_meme)
 	
     os.system(f"mkdir -p {os.path.join(output_dir, 'model-evaluation', 'modisco_profile')}")
@@ -36,7 +36,7 @@ def modisco(file_prefix, no_bias_profile_scores, modisco_results_profile_scores,
     modisco_command = "modisco report -i {} -o {} -m {}".format(modisco_results_profile_scores,os.path.join(output_dir,"model-evaluation", "modisco_profile"),meme_file)
     os.system(modisco_command)
 	
-    args_copy = Namespace(file_prefix=file_prefix, output_dir=output_dir)
+    args_copy = Namespace(file_prefix=file_prefix, output_dir=output_dir, data_type=data_type)
     args_copy.input_dir = args_copy.output_dir
     args_copy.command = "train"
     make_html.main(args_copy)
