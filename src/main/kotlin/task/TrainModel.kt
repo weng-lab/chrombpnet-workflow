@@ -39,16 +39,25 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
             evaluationRegions = input.input.evaluationRegions
         )
 
+    val bamLinks
+        = if (input.input.rawInput is ChromBPNetBAMInput)
+            (input.input.rawInput as ChromBPNetBAMInput).bams.map { it.dockerPath }.map { "ln -s $it /tmp" }.joinToString(" && ")
+        else ""
     val inputPaths
-        = if (input.input is ChromBPNetBAMInput) {
-            val paths = (input.input as ChromBPNetBAMInput).bams.map { it.dockerPath }.joinToString(separator = " ")
+        = if (input.input.rawInput is ChromBPNetBAMInput) {
+            val tempDir = "/tmp/"
+            val bams = (input.input.rawInput as ChromBPNetBAMInput).bams
+            val paths = bams.map { bam ->
+                val fileName = java.io.File(bam.dockerPath).name
+                java.io.File(tempDir, fileName).absolutePath
+            }.joinToString(separator = " ")
             "--bams $paths"
           } else {
-            val paths = (input.input as ChromBPNetFragmentFileInput).fragmentFiles.map { it.dockerPath }.joinToString(separator = " ")
+            val paths = (input.input.rawInput as ChromBPNetFragmentFileInput).fragmentFiles.map { it.dockerPath }.joinToString(separator = " ")
             "--fragment-files $paths"
           }
     val barcodeFlag
-        = if (input.input is ChromBPNetBAMInput || (input.input as ChromBPNetFragmentFileInput).barcodeFile == null)
+        = if (input.input.rawInput is ChromBPNetBAMInput || (input.input.rawInput as ChromBPNetFragmentFileInput).barcodeFile == null)
             ""
           else
             "--barcode-file ${(input.input as ChromBPNetFragmentFileInput).barcodeFile!!.dockerPath}"
@@ -56,6 +65,7 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
         = "--bias_model ${input.input.biasModelH5.dockerPath}"
     command =
         """
+        $bamLinks && \
         run-human.py \
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \

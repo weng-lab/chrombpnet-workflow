@@ -25,7 +25,7 @@ data class ShapTaskOutput(
 
 fun WorkflowBuilder.shapTask(name: String, i: Publisher<ShapTaskInput>) = this.task<ShapTaskInput, ShapTaskOutput>(name, i) {
     val params = taskParams<ShapTaskParameters>()
-    dockerImage = "gcr.io/devenv-215523/chrombpnet:latest"
+    dockerImage = "/home/henry.pratt-umw/images/chrombpnet_latest.sif"
 
     output =
         ShapTaskOutput(
@@ -36,12 +36,12 @@ fun WorkflowBuilder.shapTask(name: String, i: Publisher<ShapTaskInput>) = this.t
 
     command =
         """
-        twoBitToFa /usr/local/genome/hg38.2bit /usr/local/genome/hg38.fa && \
+        twoBitToFa /usr/local/genome/hg38.2bit /tmp/hg38.fa && \
         bed3-to-narrowpeak.py ${input.piece.dockerPath} ${input.piece.dockerPath}.narrowPeak && \
         chrombpnet contribs_bw \
             --model-h5 ${input.modelH5.dockerPath} \
             --regions ${input.piece.dockerPath}.narrowPeak \
-            --genome /usr/local/genome/hg38.fa \
+            --genome /tmp/hg38.fa \
             --chrom-sizes /usr/local/genome/hg38.chrom.sizes \
             --output-prefix $outputsDir/${input.name}.${input.index} \
             --tqdm ${params.tqdm}

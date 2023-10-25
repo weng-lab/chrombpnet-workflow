@@ -166,4 +166,26 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
         individualPredictionInputs
     )
 
+    // run prediction on individually passed sequence/region pairs
+    val individualNumpyPredictionInputs = params.inputs
+        .filter { it is IndividualPredictionInput }
+        .flatMap {
+            (it as IndividualPredictionInput).models.flatMap { model ->
+                it.sequences.map { seq ->
+                    PredictionNumpyTaskInput(
+                        "${it.name}.${model.name}.${seq.name}",
+                        model.chromBPNetModelH5,
+                        model.chromBPNetModelBiasCorrectedH5,
+                        model.chromBPNetModelBiasScaledH5,
+                        it.evaluationRegions,
+                        seq.file
+                    )
+                }
+            }
+        }.toFlux()
+    predictionNumpyTask(
+        "individual-predict-numpy",
+        individualNumpyPredictionInputs
+    )
+
 }

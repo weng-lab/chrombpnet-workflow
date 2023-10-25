@@ -33,7 +33,8 @@ fun WorkflowBuilder.modelModiscoTask(name: String, i: Publisher<ModelModiscoTask
         """
         modisco.py \
             model \
-            ${input.input.noBiasProfileScoresH5} \
+            model \
+            ${input.input.noBiasProfileScoresH5.dockerPath} \
             $outputsDir/model-evaluation/modisco_profile/profile.h5 \
             $outputsDir
         """

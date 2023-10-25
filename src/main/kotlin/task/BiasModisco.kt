@@ -33,9 +33,10 @@ fun WorkflowBuilder.biasModiscoTask(name: String, i: Publisher<BiasModiscoTaskIn
         """
         modisco.py \
             bias \
-            ${input.input.biasProfileScores} \
+            bias \
+            ${input.input.biasProfileScores.dockerPath} \
             $outputsDir/bias-evaluation/modisco_profile/profile.h5 \
-            ${input.input.biasCountsScores} \
+            ${input.input.biasCountsScores.dockerPath} \
             $outputsDir/bias-evaluation/modisco_counts/counts.h5 \
             $outputsDir
         """

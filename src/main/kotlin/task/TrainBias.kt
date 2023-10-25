@@ -20,7 +20,8 @@ data class TrainBiasTaskOutput(
     val biasModelH5: File,
     val evaluationRegions: File,
     val biasProfileScores: File,
-    val biasCountsScores: File
+    val biasCountsScores: File,
+    val rawInput: ChromBPNetInput
 )
 
 fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>) = this.task<TrainBiasTaskInput, TrainBiasTaskOutput>(name, i) {
@@ -34,12 +35,22 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             biasModelH5 = OutputFile("bias_${input.input.name}/models/bias.h5"),
             biasProfileScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.profile_scores.h5"),
             biasCountsScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.counts_scores.h5"),
-            evaluationRegions = input.input.evaluationRegions
+            evaluationRegions = input.input.evaluationRegions,
+            rawInput = input.input
         )
 
+    val bamLinks
+        = if (input.input is ChromBPNetBAMInput)
+            (input.input as ChromBPNetBAMInput).bams.map { it.dockerPath }.map { "ln -s $it /tmp" }.joinToString(" && ")
+        else ""
     val inputPaths
         = if (input.input is ChromBPNetBAMInput) {
-            val paths = (input.input as ChromBPNetBAMInput).bams.map { it.dockerPath }.joinToString(separator = " ")
+            val tempDir = "/tmp/"
+            val bams = (input.input as ChromBPNetBAMInput).bams
+            val paths = bams.map { bam ->
+                val fileName = java.io.File(bam.dockerPath).name
+                java.io.File(tempDir, fileName).absolutePath
+            }.joinToString(separator = " ")
             "--bams $paths"
           } else {
             val paths = (input.input as ChromBPNetFragmentFileInput).fragmentFiles.map { it.dockerPath }.joinToString(separator = " ")
@@ -55,6 +66,7 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
 
     command =
         """
+        $bamLinks && \
         run-human.py \
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \
