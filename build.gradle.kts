@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.krews", "krews", "0.15.2")
+    implementation("io.krews", "krews", "0.16.0")
     implementation("io.projectreactor", "reactor-core", "3.2.6.RELEASE")
 }
 

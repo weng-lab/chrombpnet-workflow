@@ -21,7 +21,11 @@ data class TrainModelTaskOutput(
     val chromBPNetModelBiasCorrectedH5: File,
     val chromBPNetModelBiasScaledH5: File,
     val evaluationRegions: File,
-    val noBiasProfileScoresH5: File
+    val noBiasProfileScoresH5: File,
+    val biasMetrics: File,
+    val log: File,
+    val metrics: File,
+    val maxBiasResponse: File
 )
 
 fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInput>) = this.task<TrainModelTaskInput, TrainModelTaskOutput>(name, i) {
@@ -36,7 +40,11 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
             chromBPNetModelBiasCorrectedH5 = OutputFile("model_${input.input.name}/models/chrombpnet_nobias.h5"),
             chromBPNetModelBiasScaledH5 = OutputFile("model_${input.input.name}/models/bias_model_scaled.h5"),
             noBiasProfileScoresH5 = OutputFile("model_${input.input.name}/auxiliary/interpret_subsample/chrombpnet_nobias.profile_scores.h5"),
-            evaluationRegions = input.input.evaluationRegions
+            evaluationRegions = input.input.evaluationRegions,
+            biasMetrics = OutputFile("model_${input.input.name}/evaluation/bias_metrics.json"),
+            log = OutputFile("model_${input.input.name}/logs/chrombpnet.log"),
+            metrics = OutputFile("model_${input.input.name}/evaluation/chrombpnet_metrics.json"),
+            maxBiasResponse = OutputFile("model_${input.input.name}/evaluation/chrombpnet_nobias_max_bias_resonse.txt")
         )
 
     val bamLinks

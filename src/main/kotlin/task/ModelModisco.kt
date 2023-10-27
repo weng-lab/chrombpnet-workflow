@@ -37,6 +37,10 @@ fun WorkflowBuilder.modelModiscoTask(name: String, i: Publisher<ModelModiscoTask
             ${input.input.noBiasProfileScoresH5.dockerPath} \
             $outputsDir/${input.input.name}/model-evaluation/modisco_profile/profile.h5 \
             $outputsDir \
-            ${params.dataType}
+            ${params.dataType} \
+            ${input.input.biasMetrics.dockerPath} \
+            ${input.input.log.dockerPath} \
+            ${input.input.metrics.dockerPath} \
+            ${input.input.maxBiasResponse.dockerPath}
         """
 }

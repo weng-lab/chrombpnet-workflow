@@ -21,7 +21,9 @@ data class TrainBiasTaskOutput(
     val evaluationRegions: File,
     val biasProfileScores: File,
     val biasCountsScores: File,
-    val rawInput: ChromBPNetInput
+    val rawInput: ChromBPNetInput,
+    val log: File,
+    val biasMetrics: File
 )
 
 fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>) = this.task<TrainBiasTaskInput, TrainBiasTaskOutput>(name, i) {
@@ -36,7 +38,9 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             biasProfileScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.profile_scores.h5"),
             biasCountsScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.counts_scores.h5"),
             evaluationRegions = input.input.evaluationRegions,
-            rawInput = input.input
+            rawInput = input.input,
+            log = OutputFile("bias_${input.input.name}/logs/bias.log"),
+            biasMetrics = OutputFile("bias_${input.input.name}/evaluation/bias_metrics.json")
         )
 
     val bamLinks
