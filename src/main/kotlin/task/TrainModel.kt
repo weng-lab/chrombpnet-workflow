@@ -71,6 +71,8 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
             ""
           else
             "--barcode-file ${(input.input as ChromBPNetFragmentFileInput).barcodeFile!!.dockerPath}"
+    val peaksFlag
+        = if (input.input.peaks != null) "--peaks ${input.input.peaks!!.dockerPath}" else ""
     val biasModelFlag
         = "--bias_model ${input.input.biasModelH5.dockerPath}"
     command =
@@ -80,6 +82,7 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \
             $biasModelFlag \
+            $peaksFlag \
             $barcodeFlag
         """
 }

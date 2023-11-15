@@ -24,7 +24,8 @@ data class TrainBiasTaskOutput(
     val species: String,
     val rawInput: ChromBPNetInput,
     val log: File,
-    val biasMetrics: File
+    val biasMetrics: File,
+    val peaks: File?
 )
 
 fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>) = this.task<TrainBiasTaskInput, TrainBiasTaskOutput>(name, i) {
@@ -42,7 +43,8 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             species = input.input.species,
             rawInput = input.input,
             log = OutputFile("bias_${input.input.name}/logs/bias.log"),
-            biasMetrics = OutputFile("bias_${input.input.name}/evaluation/bias_metrics.json")
+            biasMetrics = OutputFile("bias_${input.input.name}/evaluation/bias_metrics.json"),
+	    peaks = input.input.peaks
         )
 
     val bamLinks
@@ -67,6 +69,8 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             ""
           else
             "--barcode-file ${(input.input as ChromBPNetFragmentFileInput).barcodeFile!!.dockerPath}"
+    val peaksFlag
+        = if (input.input.peaks != null) "--peaks ${input.input.peaks!!.dockerPath}" else ""
     val biasModelFlag
         = "--bias_output_directory $outputsDir/bias_${input.input.name}"
 
@@ -77,6 +81,7 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \
             $biasModelFlag \
+            $peaksFlag \
             $barcodeFlag
         """
 }

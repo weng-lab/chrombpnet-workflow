@@ -6,6 +6,7 @@ interface ChromBPNetInput {
     val evaluationRegions: File
     val trainedModel: TrainedModelInput?
     val species: String
+    val peaks: File?
 }
 
 data class ChromBPNetBAMInput(
@@ -13,7 +14,8 @@ data class ChromBPNetBAMInput(
     val bams: List<File>,
     override val evaluationRegions: File,
     override val trainedModel: TrainedModelInput? = null,
-    override val species: String = "human"
+    override val species: String = "human",
+    override val peaks: File? = null
 ) : ChromBPNetInput
 
 data class ChromBPNetFragmentFileInput(
@@ -22,7 +24,8 @@ data class ChromBPNetFragmentFileInput(
     override val evaluationRegions: File,
     val barcodeFile: File? = null,
     override val trainedModel: TrainedModelInput? = null,
-    override val species: String = "human"
+    override val species: String = "human",
+    override val peaks: File? = null
 ) : ChromBPNetInput
 
 data class TrainedModelInput(
@@ -50,7 +53,8 @@ data class IndividualPredictionInput(
     override val evaluationRegions: File,
     val sequences: List<IndividualPredictionSequence>,
     override val trainedModel: TrainedModelInput? = null,
-    override val species: String = "human"
+    override val species: String = "human",
+    override val peaks: File? = null
 ) : ChromBPNetInput
 
 fun TrainedModelInput.hasCompleteModel(): Boolean {
