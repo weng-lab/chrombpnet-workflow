@@ -171,13 +171,6 @@ def main():
 	else:
 		print("Command not found")
 
-
-if __name__=="__main_-":
-	main()
-
-    
-        
-(base) root@dceaf77f5e59:/scratch/chrombpnet/chrombpnet# cat pipelines.py 
 import pandas as pd
 import os
 import json
@@ -547,3 +540,6 @@ def bias_model_qc(args):
 	args_copy.input_dir = args_copy.output_dir
 	args_copy.command = args_copy.cmd_bias
 	make_html_bias.main(args_copy)
+
+if __name__=="__main_-":
+	main()

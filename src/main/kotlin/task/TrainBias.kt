@@ -21,7 +21,10 @@ data class TrainBiasTaskOutput(
     val evaluationRegions: File,
     val biasProfileScores: File,
     val biasCountsScores: File,
-    val species: String
+    val species: String,
+    val rawInput: ChromBPNetInput,
+    val log: File,
+    val biasMetrics: File
 )
 
 fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>) = this.task<TrainBiasTaskInput, TrainBiasTaskOutput>(name, i) {
@@ -36,12 +39,24 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             biasProfileScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.profile_scores.h5"),
             biasCountsScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.counts_scores.h5"),
             evaluationRegions = input.input.evaluationRegions,
-            species = input.input.species
+            species = input.input.species,
+            rawInput = input.input,
+            log = OutputFile("bias_${input.input.name}/logs/bias.log"),
+            biasMetrics = OutputFile("bias_${input.input.name}/evaluation/bias_metrics.json")
         )
 
+    val bamLinks
+        = if (input.input is ChromBPNetBAMInput)
+            (input.input as ChromBPNetBAMInput).bams.map { it.dockerPath }.map { "ln -s $it /tmp" }.joinToString(" && ")
+        else ""
     val inputPaths
         = if (input.input is ChromBPNetBAMInput) {
-            val paths = (input.input as ChromBPNetBAMInput).bams.map { it.dockerPath }.joinToString(separator = " ")
+            val tempDir = "/tmp/"
+            val bams = (input.input as ChromBPNetBAMInput).bams
+            val paths = bams.map { bam ->
+                val fileName = java.io.File(bam.dockerPath).name
+                java.io.File(tempDir, fileName).absolutePath
+            }.joinToString(separator = " ")
             "--bams $paths"
           } else {
             val paths = (input.input as ChromBPNetFragmentFileInput).fragmentFiles.map { it.dockerPath }.joinToString(separator = " ")
@@ -57,6 +72,7 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
 
     command =
         """
+        $bamLinks && \
         run-${input.input.species}.py \
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \

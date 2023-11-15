@@ -40,14 +40,14 @@ fun WorkflowBuilder.predictionTask(name: String, i: Publisher<PredictionTaskInpu
 
     command =
         """
-        twoBitToFa ${input.sequence?.dockerPath ?: "/usr/local/genome/hg38.2bit"} /usr/local/genome/sequence.fa && \
-        bed3-to-narrowpeak.py ${input.evaluationRegions.dockerPath} ${input.evaluationRegions.dockerPath}.narrowPeak && \
+        twoBitToFa ${input.sequence?.dockerPath ?: "/usr/local/genome/hg38.2bit"} /tmp/sequence.fa && \
+        bed3-to-narrowpeak.py ${input.evaluationRegions.dockerPath} /tmp/regions.narrowPeak && \
         chrombpnet pred_bw \
             --bias-model ${input.chromBPNetModelBiasScaledH5.dockerPath} \
             --chrombpnet-model ${input.chromBPNetModelH5.dockerPath} \
             --chrombpnet-model-nb ${input.chromBPNetModelBiasCorrectedH5.dockerPath} \
-            --regions ${input.evaluationRegions.dockerPath}.narrowPeak \
-            --genome /usr/local/genome/sequence.fa \
+            --regions /tmp/regions.narrowPeak \
+            --genome /tmp/sequence.fa \
             --chrom-sizes /usr/local/genome/hg38.chrom.sizes \
             --output-prefix $outputsDir/predictions_${input.name} \
             --tqdm ${params.tqdm}

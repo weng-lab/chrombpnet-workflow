@@ -30,3 +30,5 @@ RUN apt-get autoremove -y && \
     apt-get autoclean -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+COPY auto_shift_detect.py /scratch/chrombpnet/chrombpnet/helpers/preprocessing
