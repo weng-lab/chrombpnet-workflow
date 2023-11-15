@@ -4,6 +4,7 @@ import krews.core.WorkflowBuilder
 import krews.file.*
 import krews.file.OutputDirectory
 import model.ChromBPNetInput
+import model.ASSEMBLIES
 import org.reactivestreams.Publisher
 
 data class ShapTaskParameters(
@@ -14,7 +15,8 @@ data class ShapTaskInput(
     val name: String,
     val index: Int,
     val piece: File,
-    val modelH5: File
+    val modelH5: File,
+    val species: String
 )
 
 data class ShapTaskOutput(
@@ -25,6 +27,7 @@ data class ShapTaskOutput(
 
 fun WorkflowBuilder.shapTask(name: String, i: Publisher<ShapTaskInput>) = this.task<ShapTaskInput, ShapTaskOutput>(name, i) {
     val params = taskParams<ShapTaskParameters>()
+    val assembly = ASSEMBLIES.get(input.species)
     dockerImage = "gcr.io/devenv-215523/chrombpnet:latest"
 
     output =
@@ -36,13 +39,13 @@ fun WorkflowBuilder.shapTask(name: String, i: Publisher<ShapTaskInput>) = this.t
 
     command =
         """
-        twoBitToFa /usr/local/genome/hg38.2bit /usr/local/genome/hg38.fa && \
+        twoBitToFa /usr/local/genome/$assembly.2bit /usr/local/genome/$assembly.fa && \
         bed3-to-narrowpeak.py ${input.piece.dockerPath} ${input.piece.dockerPath}.narrowPeak && \
         chrombpnet contribs_bw \
             --model-h5 ${input.modelH5.dockerPath} \
             --regions ${input.piece.dockerPath}.narrowPeak \
-            --genome /usr/local/genome/hg38.fa \
-            --chrom-sizes /usr/local/genome/hg38.chrom.sizes \
+            --genome /usr/local/genome/$assembly.fa \
+            --chrom-sizes /usr/local/genome/$assembly.chrom.sizes \
             --output-prefix $outputsDir/${input.name}.${input.index} \
             --tqdm ${params.tqdm}
         """

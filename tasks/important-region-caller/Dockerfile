@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 RUN apt-get -y update && apt-get -y install python3 python3-pip wget libkrb5-dev libcurl4-openssl-dev && \
     python3 -m pip install pyBigWig numpy hmmlearn && \
@@ -13,4 +13,6 @@ RUN mkdir -p /usr/local/genome && \
     chmod +x /bin/bedToBigBed
 
 COPY important-region-caller.py /bin
+COPY find-regions-with-signal.py /bin
 RUN chmod +x /bin/important-region-caller.py
+RUN chmod +x /bin/find-regions-with-signal.py

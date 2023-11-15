@@ -5,13 +5,15 @@ interface ChromBPNetInput {
     val name: String
     val evaluationRegions: File
     val trainedModel: TrainedModelInput?
+    val species: String
 }
 
 data class ChromBPNetBAMInput(
     override val name: String,
     val bams: List<File>,
     override val evaluationRegions: File,
-    override val trainedModel: TrainedModelInput? = null
+    override val trainedModel: TrainedModelInput? = null,
+    override val species: String = "human"
 ) : ChromBPNetInput
 
 data class ChromBPNetFragmentFileInput(
@@ -19,7 +21,8 @@ data class ChromBPNetFragmentFileInput(
     val fragmentFiles: List<File>,
     override val evaluationRegions: File,
     val barcodeFile: File? = null,
-    override val trainedModel: TrainedModelInput? = null
+    override val trainedModel: TrainedModelInput? = null,
+    override val species: String = "human"
 ) : ChromBPNetInput
 
 data class TrainedModelInput(
@@ -46,7 +49,8 @@ data class IndividualPredictionInput(
     val models: List<TrainedPredictiveModel>,
     override val evaluationRegions: File,
     val sequences: List<IndividualPredictionSequence>,
-    override val trainedModel: TrainedModelInput? = null
+    override val trainedModel: TrainedModelInput? = null,
+    override val species: String = "human"
 ) : ChromBPNetInput
 
 fun TrainedModelInput.hasCompleteModel(): Boolean {
@@ -54,3 +58,5 @@ fun TrainedModelInput.hasCompleteModel(): Boolean {
            chromBPNetModelBiasCorrectedH5?.let { true } ?: false &&
            chromBPNetModelBiasScaledH5?.let { true } ?: false
 }
+
+val ASSEMBLIES = mapOf("human" to "hg38", "rat" to "rn7", "mouse" to "mm10")

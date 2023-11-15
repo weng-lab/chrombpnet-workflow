@@ -22,7 +22,7 @@ def write_bed_file(regions, output_filename):
             chrom, start, end = region
             bed_file.write(f"{chrom}\t{start}\t{end}\tregion_{i}\n")
 
-def regions(bigwig, chrom):
+def find_regions(bigwig, chrom):
     bigwig_file = pyBigWig.open(bigwig)
     chromosome_regions = []
         
@@ -53,7 +53,8 @@ def main(argc, argv):
 
     # Get regions for all chromosomes in parallel
     bigwig_file = pyBigWig.open(argv[1])
-    regions = sum(Parallel(n_jobs = -1)(delayed(regions)(argv[1], chrom) for chrom in bigwig_file.chroms()), [])  # List to store regions with signal
+    regions = sum(Parallel(n_jobs = -1)(delayed(find_regions)(argv[1], chrom) for chrom in bigwig_file.chroms()), [])  # List to store regions with signal
+    print(f"found {len(regions)} regions total", file = sys.stderr)
 
     # Write the regions to the BED file
     write_bed_file(regions, argv[2])

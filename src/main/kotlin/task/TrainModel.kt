@@ -21,7 +21,8 @@ data class TrainModelTaskOutput(
     val chromBPNetModelBiasCorrectedH5: File,
     val chromBPNetModelBiasScaledH5: File,
     val evaluationRegions: File,
-    val noBiasProfileScoresH5: File
+    val noBiasProfileScoresH5: File,
+    val species: String
 )
 
 fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInput>) = this.task<TrainModelTaskInput, TrainModelTaskOutput>(name, i) {
@@ -36,7 +37,8 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
             chromBPNetModelBiasCorrectedH5 = OutputFile("model_${input.input.name}/models/chrombpnet_nobias.h5"),
             chromBPNetModelBiasScaledH5 = OutputFile("model_${input.input.name}/models/bias_model_scaled.h5"),
             noBiasProfileScoresH5 = OutputFile("model_${input.input.name}/auxiliary/interpret_subsample/chrombpnet_nobias.profile_scores.h5"),
-            evaluationRegions = input.input.evaluationRegions
+            evaluationRegions = input.input.evaluationRegions,
+	    species = input.input.species
         )
 
     val inputPaths
@@ -56,7 +58,7 @@ fun WorkflowBuilder.trainModelTask(name: String, i: Publisher<TrainModelTaskInpu
         = "--bias_model ${input.input.biasModelH5.dockerPath}"
     command =
         """
-        run-human.py \
+        run-{input.input.species}.py \
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \
             $biasModelFlag \

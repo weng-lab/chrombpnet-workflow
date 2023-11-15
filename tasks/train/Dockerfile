@@ -4,7 +4,9 @@ RUN apt-get -y update && apt-get -y install libcairo2-dev libsdl-pango-dev
 
 RUN mkdir -p /usr/local/genome && \
     wget http://gcp.wenglab.org/hg38.2bit -O /usr/local/genome/hg38.2bit && \
+    wget https://hgdownload.soe.ucsc.edu/goldenPath/rn7/bigZips/rn7.2bit -O /usr/local/genome/rn7.2bit && \
     wget http://gcp.wenglab.org/hg38.chrom.sizes -O /usr/local/genome/hg38.chrom.sizes && \
+    wget https://hgdownload.soe.ucsc.edu/goldenPath/rn7/bigZips/rn7.chrom.sizes -O /usr/local/genome/rn7.chrom.sizes && \
     wget https://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/twoBitToFa -O /bin/twoBitToFa && \
     chmod +x /bin/twoBitToFa && \
     pip install pysam
@@ -12,6 +14,8 @@ RUN mkdir -p /usr/local/genome && \
 RUN wget http://gcp.wenglab.org/GRCh38-Anchors.bed.gz -O /usr/local/genome/GRCh38-Anchors.bed.gz
 
 COPY run-human.py /bin
+COPY run-rat.py /bin
+COPY initialize-rat.py /bin
 COPY initialize.py /bin
 COPY modisco.py /bin
 COPY bed3-to-narrowpeak.py /bin

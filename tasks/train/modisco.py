@@ -40,4 +40,4 @@ def modisco(file_prefix, no_bias_profile_scores, modisco_results_profile_scores,
     make_html.main(args_copy)
 
 if __name__ == "__main__":
-	sys.exit(bias_modisco(*sys.argv[2:]) if sys.argv[1] == "bias" else modisco())
+	sys.exit(bias_modisco(*sys.argv[2:]) if sys.argv[1] == "bias" else modisco(*sys.argv[2:]))

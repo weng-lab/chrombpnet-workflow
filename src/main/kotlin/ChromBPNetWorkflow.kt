@@ -91,7 +91,8 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
                 SplitTaskInput(
                     name = it.name,
                     modelH5 = it.chromBPNetModelBiasCorrectedH5,
-                    input = it.evaluationRegions
+                    input = it.evaluationRegions,
+		    species = it.species
                 )
             }
             .concatWith(
@@ -100,7 +101,8 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
                         SplitTaskInput(
                             name = it.name,
                             modelH5 = it.trainedModel!!.chromBPNetModelBiasCorrectedH5!!,
-                            input = it.evaluationRegions
+                            input = it.evaluationRegions,
+			    species = it.species
                         )
                     }
                     .toFlux()
@@ -117,7 +119,8 @@ val chromBPNetWorkflow = workflow("chrombpnet-workflow") {
                         name = it.name,
                         modelH5 = it.modelH5,
                         index = i,
-                        piece = v
+                        piece = v,
+			species = it.species
                     )
                 }.toFlux()
             }

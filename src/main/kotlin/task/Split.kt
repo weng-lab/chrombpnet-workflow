@@ -13,13 +13,15 @@ data class SplitTaskParameters(
 data class SplitTaskInput(
     val name: String,
     val input: File,
-    val modelH5: File
+    val modelH5: File,
+    val species: String
 )
 
 data class SplitTaskOutput(
     val name: String,
     val pieces: List<File>,
-    val modelH5: File
+    val modelH5: File,
+    val species: String
 )
 
 fun convertToSplitIndex(num: Int): String {
@@ -36,7 +38,8 @@ fun WorkflowBuilder.splitTask(name: String, i: Publisher<SplitTaskInput>) = this
         SplitTaskOutput(
             name = input.name,
             pieces = (0 until params.chunks).map { OutputFile("piece_${input.name}_${convertToSplitIndex(it)}") },
-            modelH5 = input.modelH5
+            modelH5 = input.modelH5,
+	    species = input.species
         )
 
     command =

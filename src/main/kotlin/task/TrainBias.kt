@@ -20,7 +20,8 @@ data class TrainBiasTaskOutput(
     val biasModelH5: File,
     val evaluationRegions: File,
     val biasProfileScores: File,
-    val biasCountsScores: File
+    val biasCountsScores: File,
+    val species: String
 )
 
 fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>) = this.task<TrainBiasTaskInput, TrainBiasTaskOutput>(name, i) {
@@ -34,7 +35,8 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
             biasModelH5 = OutputFile("bias_${input.input.name}/models/bias.h5"),
             biasProfileScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.profile_scores.h5"),
             biasCountsScores = OutputFile("bias_${input.input.name}/auxiliary/interpret_subsample/bias.counts_scores.h5"),
-            evaluationRegions = input.input.evaluationRegions
+            evaluationRegions = input.input.evaluationRegions,
+            species = input.input.species
         )
 
     val inputPaths
@@ -55,7 +57,7 @@ fun WorkflowBuilder.trainBiasTask(name: String, i: Publisher<TrainBiasTaskInput>
 
     command =
         """
-        run-human.py \
+        run-${input.input.species}.py \
             $inputPaths \
             --model_output_directory $outputsDir/model_${input.input.name} \
             $biasModelFlag \
