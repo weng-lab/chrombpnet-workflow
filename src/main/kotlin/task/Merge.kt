@@ -7,7 +7,8 @@ import model.ChromBPNetInput
 import org.reactivestreams.Publisher
 
 data class MergeTaskParameters(
-    val tqdm: Int = 1
+    val tqdm: Int = 1,
+    val assembly: String? = "hg38"
 )
 
 data class MergeTaskInput(
@@ -37,7 +38,7 @@ fun WorkflowBuilder.mergeTask(name: String, i: Publisher<MergeTaskInput>) = this
     val countBwPaths = input.countPieces.map { it.dockerPath }
     command =
         """
-        merge.py $outputsDir/${input.name}.profile_scores.bw ${profileBwPaths.joinToString(separator = " ")} && \
-        merge.py $outputsDir/${input.name}.count_scores.bw ${countBwPaths.joinToString(separator = " ")}
+        merge.py ${params.assembly} $outputsDir/${input.name}.profile_scores.bw ${profileBwPaths.joinToString(separator = " ")} && \
+        merge.py ${params.assembly} $outputsDir/${input.name}.count_scores.bw ${countBwPaths.joinToString(separator = " ")}
         """
 }

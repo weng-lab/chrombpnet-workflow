@@ -9,6 +9,7 @@ RUN apt-get -y update && \
     chmod +x /bin/bedGraphToBigWig && \
     mkdir -p /usr/local/genome && \
     wget http://gcp.wenglab.org/hg38.chrom.sizes -O /usr/local/genome/hg38.chrom.sizes && \
+    wget https://hgdownload.soe.ucsc.edu/goldenPath/rn7/bigZips/rn7.chrom.sizes -O /usr/local/genome/rn7.chrom.sizes && \
     apt-get -y remove wget python3-pip && \
     apt-get -y clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
